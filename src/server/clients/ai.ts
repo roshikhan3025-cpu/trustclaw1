@@ -19,7 +19,7 @@ interface GetAIModelParams {
   baseUrl?: string | null;
 }
 
-export function getAIModel({ provider, model, apiKey, baseUrl }: GetAIModelParams) {
+export function getAIModel({ provider, model, apiKey, baseUrl }: GetAIModelParams): any {
   switch (provider as AIProvider) {
     case "openai": {
       const openai = createOpenAI({
