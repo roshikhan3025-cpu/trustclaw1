@@ -121,7 +121,8 @@ Your memory persists automatically across conversations. Important facts, prefer
 const INSTANCE_SELECT = {
   id: true,
   userId: true,
-  anthropicModel: true,
+  aiProvider: true,
+  aiModel: true,
   createdAt: true,
 } as const;
 
@@ -159,7 +160,10 @@ export const createInstance = protectedProcedure
     const instance = await db.composioClawInstance.create({
       data: {
         userId,
-        anthropicModel: input.anthropicModel,
+        aiProvider: input.aiProvider,
+        aiModel: input.aiModel,
+        aiApiKey: input.aiApiKey,
+        aiBaseUrl: input.aiBaseUrl,
         identityPrompt,
         soulPrompt,
       },

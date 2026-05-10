@@ -3,12 +3,10 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import type { z } from "zod";
 import { trpc } from "~/clients/trpc";
 import { showTrpcErrorToast } from "~/components/core/toast-notifications";
 import { ErrorBoundary } from "~/components/core/error-boundary";
 import { Button } from "~/components/ui/button";
-import { allowedAnthropicModelSchema } from "~/server/api/routers/trustclaw/createInstance.schema";
 import {
   STEP_ORDER,
   WRITING_STYLES,
@@ -44,7 +42,8 @@ interface OnboardingWizardState {
   personality: PersonalityKey | null;
   emoji: string | null;
   lore: string;
-  anthropicModel: z.infer<typeof allowedAnthropicModelSchema>;
+  aiProvider: string;
+  aiModel: string;
 }
 
 function getAnimationState(step: Step): AnimationState {
@@ -75,7 +74,8 @@ interface SavedOnboardingState {
   personality: string | null;
   emoji: string | null;
   lore: string;
-  anthropicModel: string;
+  aiProvider: string;
+  aiModel: string;
 }
 
 interface OnboardingProps {
@@ -100,9 +100,6 @@ export function Onboarding({
 
   const [step, setStep] = useState<Step>(initialStep);
   const [wizardState, setWizardState] = useState<OnboardingWizardState>(() => {
-    const parsedModel = allowedAnthropicModelSchema.safeParse(
-      savedState?.anthropicModel,
-    );
     return {
       name: savedState?.name ?? "",
       writingStyle:
@@ -113,9 +110,8 @@ export function Onboarding({
         null,
       emoji: savedState?.emoji ?? null,
       lore: savedState?.lore ?? "",
-      anthropicModel: parsedModel.success
-        ? parsedModel.data
-        : "claude-sonnet-4-5-20250929",
+      aiProvider: savedState?.aiProvider ?? "openai",
+      aiModel: savedState?.aiModel ?? "gpt-4o",
     };
   });
 
@@ -151,7 +147,8 @@ export function Onboarding({
       personality: currentWizardState.personality,
       emoji: currentWizardState.emoji,
       lore: currentWizardState.lore,
-      anthropicModel: currentWizardState.anthropicModel,
+      aiProvider: currentWizardState.aiProvider as any,
+      aiModel: currentWizardState.aiModel,
     });
   };
 
@@ -176,7 +173,8 @@ export function Onboarding({
     }
     try {
       await createInstance.mutateAsync({
-        anthropicModel: wizardState.anthropicModel,
+        aiProvider: wizardState.aiProvider as any,
+        aiModel: wizardState.aiModel,
       });
       setInstanceCreated(true);
       goToStep("integrations");
@@ -308,10 +306,14 @@ export function Onboarding({
 
           {step === "model" && (
             <ModelStep
-              key="model"
-              value={wizardState.anthropicModel}
-              onChange={(anthropicModel) =>
-                setWizardState((prev) => ({ ...prev, anthropicModel }))
+              key="model-step"
+              provider={wizardState.aiProvider}
+              model={wizardState.aiModel}
+              onProviderChange={(aiProvider) =>
+                setWizardState((prev) => ({ ...prev, aiProvider }))
+              }
+              onModelChange={(aiModel) =>
+                setWizardState((prev) => ({ ...prev, aiModel }))
               }
               onNext={() => void handleModelNext()}
               onBack={goBack}

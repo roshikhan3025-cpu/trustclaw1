@@ -24,6 +24,7 @@ import {
 } from "./context/token-estimation";
 import { stripToolResultEchoes } from "./strip-tool-echoes";
 import { clearStreamingMessage } from "~/server/clients/redis";
+import { getAIModel } from "~/server/clients/ai";
 import type { ReconstructedMessage } from "./types";
 
 type MessageSource = "web" | "telegram" | "cron";
@@ -113,21 +114,10 @@ export async function prepareAgentRun(
     userMessage,
   );
 
-  const contextWindow = getContextWindow(instance.anthropicModel);
+  const contextWindow = getContextWindow(instance.aiModel);
   const { messages: prunedMessages } = pruneContext(aiMessages, contextWindow);
 
-  // Add cache breakpoint to last history message (before new user message)
-  // so the conversation prefix is cached across turns
-  if (prunedMessages.length >= 2) {
-    const lastHistoryIndex = prunedMessages.length - 2;
-    const msg = prunedMessages[lastHistoryIndex]!;
-    prunedMessages[lastHistoryIndex] = {
-      ...msg,
-      providerOptions: {
-        anthropic: { cacheControl: { type: "ephemeral" } },
-      },
-    };
-  }
+  // (Optional) Add cache breakpoint logic here if supported by provider
 
   await db.message.create({
     data: {
@@ -168,19 +158,18 @@ export async function prepareAgentRun(
     },
   });
 
-  const modelString = instance.anthropicModel.startsWith("anthropic/")
-    ? instance.anthropicModel
-    : `anthropic/${instance.anthropicModel}`;
-  const model = modelString;
+  const model = getAIModel({
+    provider: instance.aiProvider,
+    model: instance.aiModel,
+    apiKey: instance.aiApiKey,
+    baseUrl: instance.aiBaseUrl,
+  });
 
   const agent = new ToolLoopAgent({
     model,
     instructions: {
       role: "system",
       content: systemPrompt,
-      providerOptions: {
-        anthropic: { cacheControl: { type: "ephemeral" } },
-      },
     } satisfies SystemModelMessage,
     tools: allTools,
     stopWhen: stepCountIs(100),
@@ -242,7 +231,8 @@ export async function prepareAgentRun(
         void runPostResponseTasks({
           instanceId,
           instance: {
-            anthropicModel: instance.anthropicModel,
+            aiProvider: instance.aiProvider,
+            aiModel: instance.aiModel,
             compactionCount: instance.compactionCount,
             memoryFlushCount: instance.memoryFlushCount,
             lastCompactionSummary: instance.lastCompactionSummary,

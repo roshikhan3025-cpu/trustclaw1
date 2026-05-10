@@ -36,25 +36,14 @@ export const CURATED_EMOJIS = [
   "\u2728", "\u{1F4AB}", "\u{1F338}", "\u{1F340}", "\u2600\uFE0F", "\u{1F308}",
 ] as const;
 
-export const MODELS = [
-  {
-    value: "claude-opus-4-6" as const,
-    label: "Claude Opus 4.6",
-    description: "Most capable",
-    cost: "$$$",
-  },
-  {
-    value: "claude-sonnet-4-5-20250929" as const,
-    label: "Claude Sonnet 4.5",
-    description: "Balanced",
-    cost: "$$",
-  },
-  {
-    value: "claude-haiku-4-5-20251001" as const,
-    label: "Claude Haiku 4.5",
-    description: "Fast & affordable",
-    cost: "$",
-  },
+export const PROVIDERS = [
+  { value: "openai", label: "OpenAI", description: "Industry standard" },
+  { value: "gemini", label: "Gemini", description: "Google's latest" },
+  { value: "groq", label: "Groq", description: "Blazing fast inference" },
+  { value: "azure", label: "Azure", description: "Enterprise grade" },
+  { value: "openrouter", label: "OpenRouter", description: "All-in-one gateway" },
+  { value: "nvidia", label: "NVIDIA", description: "High performance" },
+  { value: "custom", label: "Custom", description: "Self-hosted / OpenAI-compatible" },
 ] as const;
 
 export const INTEGRATION_DESCRIPTIONS: Record<string, string> = {

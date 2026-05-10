@@ -23,11 +23,18 @@ export const updateSettings = protectedProcedure
       db.composioClawInstance.update({
         where: { userId },
         data: {
-          ...(input.anthropicModel && { anthropicModel: input.anthropicModel }),
+          ...(input.aiProvider && { aiProvider: input.aiProvider }),
+          ...(input.aiModel && { aiModel: input.aiModel }),
+          ...(input.aiApiKey !== undefined && { aiApiKey: input.aiApiKey }),
+          ...(input.aiBaseUrl !== undefined && { aiBaseUrl: input.aiBaseUrl }),
+          ...(input.soulPrompt && { soulPrompt: input.soulPrompt }),
+          ...(input.identityPrompt && { identityPrompt: input.identityPrompt }),
+          ...(input.userPrompt && { userPrompt: input.userPrompt }),
         },
         select: {
           id: true,
-          anthropicModel: true,
+          aiProvider: true,
+          aiModel: true,
           updatedAt: true,
         },
       }),

@@ -14,10 +14,12 @@ import {
   buildToolFailuresSuffix,
 } from "./prompts";
 import { sanitizeString } from "../context/build-context";
+import { getAIModel } from "~/server/clients/ai";
 
 interface CompactionParams {
   instanceId: string;
-  anthropicModel: string;
+  aiProvider: string;
+  aiModel: string;
   messages: ReconstructedMessage[];
   keepRecentTokens: number;
   previousSummary: string | null;
@@ -65,13 +67,14 @@ export function findCutPoint(
 }
 
 async function summarize(
-  anthropicModel: string,
+  params: { aiProvider: string; aiModel: string },
   conversationText: string,
   previousSummary: string | null,
 ): Promise<string> {
-  const modelString = anthropicModel.startsWith("anthropic/")
-    ? anthropicModel
-    : `anthropic/${anthropicModel}`;
+  const model = getAIModel({
+    provider: params.aiProvider,
+    model: params.aiModel,
+  });
 
   const safeConversation = sanitizeString(conversationText);
   const safePreviousSummary = previousSummary ? sanitizeString(previousSummary) : null;
@@ -84,7 +87,7 @@ async function summarize(
   }
 
   const result = await generateText({
-    model: modelString,
+    model,
     system: COMPACTION_SYSTEM_PROMPT,
     messages: [{ role: "user", content: prompt }],
     maxOutputTokens: 4_000,
@@ -94,7 +97,7 @@ async function summarize(
 }
 
 async function stagedSummarize(
-  anthropicModel: string,
+  params: { aiProvider: string; aiModel: string },
   messages: ReconstructedMessage[],
   previousSummary: string | null,
 ): Promise<string> {
@@ -106,22 +109,23 @@ async function stagedSummarize(
   const secondText = serializeMessages(secondHalf);
 
   const firstSummary = await summarize(
-    anthropicModel,
+    params,
     firstText,
     previousSummary,
   );
 
   const secondSummary = await summarize(
-    anthropicModel,
+    params,
     secondText,
     firstSummary,
   );
 
-  const mergeModelString = anthropicModel.startsWith("anthropic/")
-    ? anthropicModel
-    : `anthropic/${anthropicModel}`;
+  const mergeModel = getAIModel({
+    provider: params.aiProvider,
+    model: params.aiModel,
+  });
   const mergeResult = await generateText({
-    model: mergeModelString,
+    model: mergeModel,
     system: COMPACTION_SYSTEM_PROMPT,
     messages: [
       {
@@ -156,7 +160,7 @@ function stripLargeToolResults(
 export async function runCompaction(
   params: CompactionParams,
 ): Promise<CompactionResult | null> {
-  const { instanceId, anthropicModel, messages, keepRecentTokens, previousSummary, compactionCount } = params;
+  const { instanceId, aiProvider, aiModel, messages, keepRecentTokens, previousSummary, compactionCount } = params;
 
   const cutIndex = findCutPoint(messages, keepRecentTokens);
   if (cutIndex <= 0) return null;
@@ -171,13 +175,13 @@ export async function runCompaction(
 
     if (conversationText.length > ADAPTIVE_CHUNK_THRESHOLD) {
       summary = await stagedSummarize(
-        anthropicModel,
+        { aiProvider, aiModel },
         messagesToCompact,
         previousSummary,
       );
     } else {
       summary = await summarize(
-        anthropicModel,
+        { aiProvider, aiModel },
         conversationText,
         previousSummary,
       );
@@ -187,7 +191,7 @@ export async function runCompaction(
       const stripped = stripLargeToolResults(messagesToCompact);
       const strippedText = serializeMessages(stripped);
       summary = await summarize(
-        anthropicModel,
+        { aiProvider, aiModel },
         strippedText,
         previousSummary,
       );

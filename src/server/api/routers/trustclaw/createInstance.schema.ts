@@ -1,17 +1,22 @@
 import { z } from "zod";
 
-export const ALLOWED_ANTHROPIC_MODELS = [
-  "claude-sonnet-4-5-20250929",
-  "claude-opus-4-6",
-  "claude-haiku-4-5-20251001",
+export const AI_PROVIDERS = [
+  "openai",
+  "gemini",
+  "azure",
+  "groq",
+  "openrouter",
+  "nvidia",
+  "custom",
 ] as const;
 
-export const allowedAnthropicModelSchema = z.enum(ALLOWED_ANTHROPIC_MODELS);
+export const aiProviderSchema = z.enum(AI_PROVIDERS);
 
 export const createInstanceInput = z.object({
-  anthropicModel: allowedAnthropicModelSchema.default(
-    "claude-sonnet-4-5-20250929",
-  ),
+  aiProvider: aiProviderSchema.default("openai"),
+  aiModel: z.string().default("gpt-4o"),
+  aiApiKey: z.string().optional(),
+  aiBaseUrl: z.string().optional(),
 });
 
 export type CreateInstanceInput = z.infer<typeof createInstanceInput>;

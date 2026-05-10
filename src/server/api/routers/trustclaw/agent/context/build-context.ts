@@ -225,7 +225,8 @@ export function reconstructMessages(
 export async function runPostResponseTasks(params: {
   instanceId: string;
   instance: {
-    anthropicModel: string;
+    aiProvider: string;
+    aiModel: string;
     compactionCount: number;
     memoryFlushCount: number;
     lastCompactionSummary: string | null;
@@ -254,7 +255,8 @@ export async function runPostResponseTasks(params: {
     try {
       await runMemoryFlush({
         instanceId,
-        anthropicModel: instance.anthropicModel,
+        aiProvider: instance.aiProvider,
+        aiModel: instance.aiModel,
         messages: prunedMessages,
         compactionCount: instance.compactionCount,
       });
@@ -273,7 +275,8 @@ export async function runPostResponseTasks(params: {
 
       await runCompaction({
         instanceId,
-        anthropicModel: instance.anthropicModel,
+        aiProvider: instance.aiProvider,
+        aiModel: instance.aiModel,
         messages: freshAiMessages,
         keepRecentTokens: settings.keepRecentTokens,
         previousSummary: instance.lastCompactionSummary,

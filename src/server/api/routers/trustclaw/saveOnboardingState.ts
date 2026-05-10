@@ -17,7 +17,8 @@ export const saveOnboardingState = protectedProcedure
         personality: input.personality,
         emoji: input.emoji,
         lore: input.lore,
-        anthropicModel: input.anthropicModel,
+        aiProvider: input.aiProvider,
+        aiModel: input.aiModel,
       },
       update: {
         currentStep: input.currentStep,
@@ -26,7 +27,8 @@ export const saveOnboardingState = protectedProcedure
         personality: input.personality,
         emoji: input.emoji,
         lore: input.lore,
-        anthropicModel: input.anthropicModel,
+        aiProvider: input.aiProvider,
+        aiModel: input.aiModel,
       },
     });
 

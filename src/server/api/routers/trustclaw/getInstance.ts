@@ -11,7 +11,10 @@ export const getInstance = protectedProcedure.query(async ({ ctx }) => {
       select: {
         id: true,
         userId: true,
-        anthropicModel: true,
+        aiProvider: true,
+        aiModel: true,
+        aiApiKey: true,
+        aiBaseUrl: true,
         telegramChatId: true,
         telegramLinkToken: true,
         telegramLinkTokenExpiresAt: true,
@@ -31,7 +34,8 @@ export const getInstance = protectedProcedure.query(async ({ ctx }) => {
         personality: true,
         emoji: true,
         lore: true,
-        anthropicModel: true,
+        aiProvider: true,
+        aiModel: true,
       },
     }),
     db.user.findUnique({

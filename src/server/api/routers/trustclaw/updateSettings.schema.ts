@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ALLOWED_ANTHROPIC_MODELS } from "./createInstance.schema";
+import { aiProviderSchema } from "./createInstance.schema";
 
 const ianaTimezone = z
   .string()
@@ -16,8 +16,14 @@ const ianaTimezone = z
   );
 
 export const updateSettingsInput = z.object({
-  anthropicModel: z.enum(ALLOWED_ANTHROPIC_MODELS).optional(),
+  aiProvider: aiProviderSchema.optional(),
+  aiModel: z.string().optional(),
+  aiApiKey: z.string().optional(),
+  aiBaseUrl: z.string().optional(),
   timezone: ianaTimezone.optional(),
+  soulPrompt: z.string().optional(),
+  identityPrompt: z.string().optional(),
+  userPrompt: z.string().optional(),
 });
 
 export type UpdateSettingsInput = z.infer<typeof updateSettingsInput>;

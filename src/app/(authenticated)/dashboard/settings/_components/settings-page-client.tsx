@@ -54,7 +54,12 @@ export function SettingsPageClient() {
       </div>
 
       <ErrorBoundary>
-        <ModelSettings currentModel={instance.anthropicModel} />
+        <ModelSettings 
+          currentProvider={instance.aiProvider}
+          currentModel={instance.aiModel}
+          currentApiKey={instance.aiApiKey}
+          currentBaseUrl={instance.aiBaseUrl}
+        />
       </ErrorBoundary>
 
       {data?.telegramConfigured && (

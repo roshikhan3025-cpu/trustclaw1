@@ -2,65 +2,68 @@
 
 import { motion } from "framer-motion";
 import { cn } from "~/lib/utils";
-import type { z } from "zod";
-import { allowedAnthropicModelSchema } from "~/server/api/routers/trustclaw/createInstance.schema";
-import { MODELS } from "./onboarding.consts";
+import { PROVIDERS } from "./onboarding.consts";
 import { StepLayout, itemVariants } from "./step-layout";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
 
 interface ModelStepProps {
-  value: z.infer<typeof allowedAnthropicModelSchema>;
-  onChange: (model: z.infer<typeof allowedAnthropicModelSchema>) => void;
+  provider: string;
+  model: string;
+  onProviderChange: (provider: string) => void;
+  onModelChange: (model: string) => void;
   onNext: () => void;
   onBack: () => void;
 }
 
 export function ModelStep({
-  value,
-  onChange,
+  provider,
+  model,
+  onProviderChange,
+  onModelChange,
   onNext,
   onBack,
 }: ModelStepProps) {
-  const handleModelChange = (val: string) => {
-    const model = allowedAnthropicModelSchema.safeParse(val);
-    if (!model.success) return;
-    onChange(model.data);
-  };
-
   return (
     <StepLayout
       title="Choose my brain!"
-      subtitle="Which Claude model should power me?"
+      subtitle="Which AI provider and model should power me?"
       onNext={onNext}
       onBack={onBack}
     >
-      <motion.div variants={itemVariants}>
-        <div className="grid grid-cols-1 gap-3">
-          {MODELS.map((model) => (
+      <motion.div variants={itemVariants} className="space-y-6">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {PROVIDERS.map((p) => (
             <button
-              key={model.value}
-              onClick={() => handleModelChange(model.value)}
+              key={p.value}
+              onClick={() => onProviderChange(p.value)}
               className={cn(
-                "flex min-h-[44px] items-center justify-between rounded-lg border p-4 text-left transition-all",
-                value === model.value
-                  ? "border-primary ring-primary ring-2"
+                "flex flex-col items-center justify-center rounded-lg border p-3 text-center transition-all",
+                provider === p.value
+                  ? "border-primary bg-primary/5 ring-primary ring-1"
                   : "border-border hover:border-primary/50",
               )}
             >
-              <div>
-                <p className="text-sm font-medium">{model.label}</p>
-                <p className="text-muted-foreground text-xs">
-                  {model.description}
-                </p>
-              </div>
-              <span className="text-muted-foreground text-sm font-medium">
-                {model.cost}
-              </span>
+              <p className="text-xs font-semibold">{p.label}</p>
+              <p className="text-[10px] text-muted-foreground leading-tight mt-1">
+                {p.description}
+              </p>
             </button>
           ))}
         </div>
-        <p className="text-muted-foreground mt-2 text-center text-xs">
-          You can change this later in settings.
-        </p>
+
+        <div className="space-y-2">
+          <Label className="text-xs">Model Name</Label>
+          <Input 
+            value={model}
+            onChange={(e) => onModelChange(e.target.value)}
+            placeholder="e.g. gpt-4o, gemini-1.5-pro, groq-llama3"
+            className="h-9 text-sm"
+          />
+          <p className="text-[10px] text-muted-foreground text-center">
+            You can configure API keys and custom endpoints in settings later.
+          </p>
+        </div>
       </motion.div>
     </StepLayout>
   );

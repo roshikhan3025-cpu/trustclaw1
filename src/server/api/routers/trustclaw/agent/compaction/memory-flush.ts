@@ -3,6 +3,7 @@ import { db } from "~/server/clients/db";
 import { createCustomTools } from "../tools";
 import { serializeMessages } from "./prompts";
 import type { ReconstructedMessage } from "../types";
+import { getAIModel } from "~/server/clients/ai";
 
 const FLUSH_SYSTEM_PROMPT =
   "Pre-compaction memory flush turn. " +
@@ -19,7 +20,8 @@ const FLUSH_USER_PROMPT =
 
 interface MemoryFlushParams {
   instanceId: string;
-  anthropicModel: string;
+  aiProvider: string;
+  aiModel: string;
   messages: ReconstructedMessage[];
   compactionCount: number;
 }
@@ -31,12 +33,13 @@ interface MemoryFlushResult {
 export async function runMemoryFlush(
   params: MemoryFlushParams,
 ): Promise<MemoryFlushResult> {
-  const { instanceId, anthropicModel, messages, compactionCount } = params;
+  const { instanceId, aiProvider, aiModel, messages, compactionCount } = params;
 
   try {
-    const modelString = anthropicModel.startsWith("anthropic/")
-      ? anthropicModel
-      : `anthropic/${anthropicModel}`;
+    const model = getAIModel({
+      provider: aiProvider,
+      model: aiModel,
+    });
 
     const allCustomTools = createCustomTools(instanceId);
     const memoryTools = {
@@ -48,7 +51,7 @@ export async function runMemoryFlush(
     const flushPrompt = `Here is the recent conversation context:\n\n${contextSummary}\n\n${FLUSH_USER_PROMPT}`;
 
     const result = await generateText({
-      model: modelString,
+      model: model,
       system: FLUSH_SYSTEM_PROMPT,
       messages: [{ role: "user" as const, content: flushPrompt }],
       tools: memoryTools,
