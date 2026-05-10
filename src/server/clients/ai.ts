@@ -3,6 +3,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createAzure } from "@ai-sdk/azure";
 import { createGroq } from "@ai-sdk/groq";
 
+import type { LanguageModel } from "ai";
+
 export type AIProvider = 
   | "openai" 
   | "gemini" 
@@ -19,60 +21,73 @@ interface GetAIModelParams {
   baseUrl?: string | null;
 }
 
-export function getAIModel({ provider, model, apiKey, baseUrl }: GetAIModelParams): any {
+export function getAIModel({ provider, model, apiKey, baseUrl }: GetAIModelParams): LanguageModel {
+  let aiModel: unknown;
+
   switch (provider as AIProvider) {
     case "openai": {
       const openai = createOpenAI({
         apiKey: apiKey ?? process.env.OPENAI_API_KEY,
         baseURL: baseUrl ?? undefined,
       });
-      return openai(model);
+      aiModel = openai(model);
+      break;
     }
     case "gemini": {
       const google = createGoogleGenerativeAI({
         apiKey: apiKey ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY,
       });
-      return google(model);
+      aiModel = google(model);
+      break;
     }
     case "azure": {
       const azure = createAzure({
         apiKey: apiKey ?? process.env.AZURE_RESOURCE_API_KEY,
         resourceName: process.env.AZURE_RESOURCE_NAME, // Usually global
       });
-      return azure(model);
+      aiModel = azure(model);
+      break;
     }
     case "groq": {
       const groq = createGroq({
         apiKey: apiKey ?? process.env.GROQ_API_KEY,
       });
-      return groq(model);
+      aiModel = groq(model);
+      break;
     }
     case "openrouter": {
       const openrouter = createOpenAI({
         apiKey: apiKey ?? process.env.OPENROUTER_API_KEY,
         baseURL: "https://openrouter.ai/api/v1",
       });
-      return openrouter(model);
+      aiModel = openrouter(model);
+      break;
     }
     case "nvidia": {
       const nvidia = createOpenAI({
         apiKey: apiKey ?? process.env.NVIDIA_API_KEY,
         baseURL: "https://integrate.api.nvidia.com/v1",
       });
-      return nvidia(model);
+      aiModel = nvidia(model);
+      break;
     }
     case "custom": {
       const custom = createOpenAI({
         apiKey: apiKey ?? undefined,
         baseURL: baseUrl ?? undefined,
       });
-      return custom(model);
+      aiModel = custom(model);
+      break;
     }
-    default:
+    default: {
       // Fallback to OpenAI if unknown
       const defaultOpenai = createOpenAI({
         apiKey: process.env.OPENAI_API_KEY,
       });
-      return defaultOpenai(model || "gpt-4o");
+      aiModel = defaultOpenai(model || "gpt-4o");
+      break;
+    }
   }
+
+  return aiModel as LanguageModel;
 }

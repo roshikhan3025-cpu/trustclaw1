@@ -50,7 +50,7 @@ export function ModelSettings({
 
   const handleSave = () => {
     void updateSettings.mutateAsync({
-      aiProvider: provider as any,
+      aiProvider: provider as "openai",
       aiModel: model,
       aiApiKey: apiKey || undefined,
       aiBaseUrl: baseUrl || undefined,

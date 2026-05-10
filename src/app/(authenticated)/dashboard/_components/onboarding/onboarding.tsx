@@ -147,7 +147,7 @@ export function Onboarding({
       personality: currentWizardState.personality,
       emoji: currentWizardState.emoji,
       lore: currentWizardState.lore,
-      aiProvider: currentWizardState.aiProvider as any,
+      aiProvider: currentWizardState.aiProvider as "openai",
       aiModel: currentWizardState.aiModel,
     });
   };
@@ -173,7 +173,7 @@ export function Onboarding({
     }
     try {
       await createInstance.mutateAsync({
-        aiProvider: wizardState.aiProvider as any,
+        aiProvider: wizardState.aiProvider as "openai",
         aiModel: wizardState.aiModel,
       });
       setInstanceCreated(true);
