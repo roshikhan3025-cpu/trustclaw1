@@ -52,8 +52,8 @@ export function ModelSettings({
     void updateSettings.mutateAsync({
       aiProvider: provider as any,
       aiModel: model,
-      aiApiKey: apiKey || null,
-      aiBaseUrl: baseUrl || null,
+      aiApiKey: apiKey || undefined,
+      aiBaseUrl: baseUrl || undefined,
     });
   };
 
